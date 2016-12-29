@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mariadb-bin
+data:
+  start.sh: |
+{{ tuple "_start.sh.tpl" . | include "template" | indent 4 }}
+  peer-finder.py: |
+{{ tuple "_peer-finder.py.tpl" . | include "template" | indent 4 }}
+  readiness.py: |
+{{ tuple "_readiness.py.tpl" . | include "template" | indent 4 }}
+  bootstrap-db.sh: |
+{{ tuple "_bootstrap-db.sh.tpl" . | include "template" | indent 4 }}
+  seed.sh: |
+{{ tuple "_seed.sh.tpl" . | include "template" | indent 4 }}  

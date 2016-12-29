@@ -1,0 +1,109 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mariadb-seed
+spec:
+  template:
+    metadata:
+      labels:
+        app: mariadb
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: mariadb-init
+          image: {{ .Values.images.mariadb }}
+          imagePullPolicy: Always
+          env:
+            - name: INTERFACE_NAME
+              value: "eth0"
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP                  
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: COMMAND
+              value: "bash /tmp/seed.sh"
+          ports:
+            - containerPort: {{ .Values.network.port.mariadb }}
+            - containerPort: {{ .Values.network.port.wsrep }}
+            - containerPort: {{ .Values.network.port.ist }}
+          volumeMounts:
+            - name: mycnfd
+              mountPath: /etc/my.cnf.d
+            - name: seedsh
+              mountPath: /tmp/seed.sh
+              subPath: seed.sh
+            - name: bootstrapdb
+              mountPath: /tmp/bootstrap-db.sh
+              subPath: bootstrap-db.sh
+            - name: peerfinder
+              mountPath: /tmp/peer-finder.py
+              subPath: peer-finder.py
+            - name: charsets
+              mountPath: /etc/my.cnf.d/charsets.cnf
+              subPath: charsets.cnf
+            - name: engine
+              mountPath: /etc/my.cnf.d/engine.cnf
+              subPath: engine.cnf
+            - name: log
+              mountPath: /etc/my.cnf.d/log.cnf
+              subPath: log.cnf
+            - name: mycnf
+              mountPath: /etc/my.cnf
+              subPath: my.cnf
+            - name: networking
+              mountPath: /etc/my.cnf.d/networking.cnf
+              subPath: networking.cnf
+            - name: pid
+              mountPath: /etc/my.cnf.d/pid.cnf
+              subPath: pid.cnf
+            - name: tuning
+              mountPath: /etc/my.cnf.d/tuning.cnf
+              subPath: tuning.cnf
+            - name: wsrep
+              mountPath: /etc/my.cnf.d/wsrep.cnf
+              subPath: wsrep.cnf
+      volumes:
+        - name: mycnfd
+          emptyDir: {}
+        - name: seedsh
+          configMap:
+            name: mariadb-bin
+        - name: bootstrapdb
+          configMap:
+            name: mariadb-bin
+        - name: peerfinder        
+          configMap:
+            name: mariadb-bin
+        - name: charsets
+          configMap:
+            name: mariadb-etc
+        - name: engine
+          configMap:
+            name: mariadb-etc
+        - name: log
+          configMap:
+            name: mariadb-etc
+        - name: mycnf
+          configMap:
+            name: mariadb-etc
+        - name: networking
+          configMap:
+            name: mariadb-etc
+        - name: pid
+          configMap:
+            name: mariadb-etc
+        - name: tuning
+          configMap:
+            name: mariadb-etc
+        - name: wsrep
+          configMap:
+            name: mariadb-etc
